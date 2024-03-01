@@ -1,0 +1,25 @@
+type ArtworkNftEntity @entity {
+  id: ID!
+  tokenId: Int!
+  owner: String!
+  tokenURI: String!
+}
+
+type ArtworkOrderEntity @entity {
+  id: ID!
+  orderHash: String!
+  owner: String!
+  tokenId: Int!
+  reservePrice: BigInt!
+  stepPrice: BigInt!
+  aunctionStart: BigInt!
+  aunctionDuration: BigInt!
+  status: Boolean!
+}
+
+type ArtworkBidEntity @entity {
+  id: ID!
+  orderHash: String!
+  bidder: String!
+  price: BigInt!
+}

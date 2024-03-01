@@ -1,0 +1,65 @@
+specVersion: 0.0.4
+description: Gravatar for Ethereum
+repository: https://github.com/SInoLabs-Blockchain/Indexer
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Marketplace
+    network: mainnet
+    source:
+      address: "0xf71f6978527c272183FB0ADb8429Aebf7CE8b826"
+      abi: Marketplace
+      startBlock: 46500700
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ArtworkNftEntity
+        - ArtworkOrderEntity
+        - ArtworkBidEntity
+      abis:
+        - name: Marketplace
+          file: ./abis/Marketplace.json
+      eventHandlers:
+        - event: ArtworkList(indexed bytes32,address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleArtworkList
+        - event: ArtworkBid(indexed bytes32,address,uint256)
+          handler: handleArtworkBid
+        - event: ArtworkClaim(indexed bytes32,address)
+          handler: handleArtworkClaim
+        - event: ArtworkMint(address,indexed uint256,string)
+          handler: handleArtworkMint
+        - event: ArtworkWithdraw(indexed bytes32)
+          handler: handleArtworkWithdraw
+      file: ./src/handlers/Marketplace.mapping.ts
+templates:
+  - kind: ethereum/contract
+    name: Marketplace
+    network: mainnet
+    source:
+      abi: Marketplace
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./src/handlers/Marketplace.mapping.ts
+      entities:
+        - Nft
+        - Order
+        - OrderBid
+      abis:
+        - name: Marketplace
+          file: ./abis/Marketplace.json
+      eventHandlers:
+        - event: ArtworkList(indexed bytes32,address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleArtworkList
+        - event: ArtworkBid(indexed bytes32,address,uint256)
+          handler: handleArtworkBid
+        - event: ArtworkClaim(indexed bytes32,address)
+          handler: handleArtworkClaim
+        - event: ArtworkMint(address,indexed uint256,string)
+          handler: handleArtworkMint
+        - event: ArtworkWithdraw(indexed bytes32)
+          handler: handleArtworkWithdraw
