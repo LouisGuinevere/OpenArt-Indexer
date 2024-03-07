@@ -10,12 +10,11 @@ import {
   ArtworkOrderEntity,
   ArtworkBidEntity,
 } from "../../generated/schema";
-import { log } from "@graphprotocol/graph-ts";
+import { BigInt, log } from "@graphprotocol/graph-ts";
 
 export function handleArtworkList(event: ArtworkList): void {
   // log.info("Event ArtworkList: sender={}", [event.params.sender.toHexString()]);
-  const id = event.transaction.hash.toHex();
-  let entity = new ArtworkOrderEntity(id);
+  let entity = new ArtworkOrderEntity(event.params.orderHash.toHexString());
   entity.orderHash = event.params.orderHash.toHexString();
   entity.owner = event.params.owner.toHexString();
   entity.tokenId = event.params.tokenId.toI32();
@@ -24,34 +23,54 @@ export function handleArtworkList(event: ArtworkList): void {
   entity.aunctionDuration = event.params.aunctionDuration;
   entity.aunctionStart = event.params.aunctionStart;
   entity.status = true;
+  entity.soldFor = new BigInt(0);
+  entity.timestamp = event.params.timestamp;
   entity.save();
+
+  let nftEntity = ArtworkNftEntity.load(event.params.tokenId.toHexString());
+  if (nftEntity) {
+    nftEntity.order = entity.id;
+    nftEntity.save();
+  }
 }
 
 export function handleArtworkBid(event: ArtworkBid): void {
-  // log.info("Event ArtworkBid: sender={}, success={}", [
-  //   event.params.sender.toHexString(),
-  //   event.params.success.toString(),
-  // ]);
-  const id = event.transaction.hash.toHex();
-  let entity = ArtworkBidEntity.load(id);
-  if (entity == null) {
-    entity = new ArtworkBidEntity(id);
-  } else {
-    entity.bidder = event.params.bidder.toHexString();
-    entity.price = event.params.price;
-    entity.save();
+  log.info("Event ArtworkBid: orderHash={}", [
+    event.params.orderHash.toHexString(),
+  ]);
+  let entity = new ArtworkBidEntity(event.transaction.hash.toHexString());
+  entity.orderHash = event.params.orderHash.toHexString();
+  entity.bidder = event.params.bidder.toHexString();
+  entity.price = event.params.price;
+  entity.timestamp = event.params.timestamp;
+  entity.save();
+  let artworkOrderEntity = ArtworkOrderEntity.load(
+    event.params.orderHash.toHexString()
+  );
+  if (artworkOrderEntity) {
+    if (artworkOrderEntity.aunctionStart == BigInt.fromI32(0)) {
+      artworkOrderEntity.aunctionStart = event.params.timestamp;
+    }
+    artworkOrderEntity.soldFor = event.params.price;
+    artworkOrderEntity.save();
   }
 }
 
 export function handleArtworkClaim(event: ArtworkClaim): void {
-  // log.info("Event ArtworkClaim: sender={}", [
+  // log.info("Event ArtworkClaim:  sender={}", [
   //   event.params.sender.toHexString(),
   // ]);
-  const id = event.transaction.hash.toHex();
-  let entity = new ArtworkOrderEntity(id);
+  let entity = ArtworkOrderEntity.load(event.params.orderHash.toHexString());
   if (entity != null) {
     entity.status = false;
     entity.save();
+    let nftEntity = ArtworkNftEntity.load(
+      BigInt.fromI32(entity.tokenId).toHexString()
+    );
+    if (nftEntity) {
+      nftEntity.owner = event.params.claimer.toHexString();
+      nftEntity.save();
+    }
   }
 }
 
@@ -59,8 +78,7 @@ export function handleArtworkWithdraw(event: ArtworkWithdraw): void {
   // log.info("Event ArtworkWithdraw: sender={}", [
   //   event.params.sender.toHexString(),
   // ]);
-  const id = event.transaction.hash.toHex();
-  let entity = new ArtworkOrderEntity(id);
+  let entity = ArtworkOrderEntity.load(event.params.orderHash.toHexString());
   if (entity != null) {
     entity.status = false;
     entity.save();
@@ -69,12 +87,13 @@ export function handleArtworkWithdraw(event: ArtworkWithdraw): void {
 
 export function handleArtworkMint(event: ArtworkMint): void {
   log.info("Event ArtworkMint", []);
-  const id = event.transaction.hash.toHex();
-  let entity = new ArtworkNftEntity(id);
+  let entity = new ArtworkNftEntity(event.params.tokenId.toHexString());
   if (entity != null) {
     entity.tokenId = event.params.tokenId.toI32();
     entity.owner = event.params.owner.toHexString();
+    entity.creator = event.params.owner.toHexString();
     entity.tokenURI = event.params.tokenURI;
+    entity.timestamp = event.params.timestamp;
     entity.save();
   }
 }

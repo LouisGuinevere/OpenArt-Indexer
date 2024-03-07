@@ -8,9 +8,9 @@ dataSources:
     name: Marketplace
     network: mainnet
     source:
-      address: "0xf71f6978527c272183FB0ADb8429Aebf7CE8b826"
+      address: "0x62011AE9BFd9dCa2A2BFd037fb66b0bcC4a0e4C2"
       abi: Marketplace
-      startBlock: 46500700
+      startBlock: 30563285
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -23,15 +23,15 @@ dataSources:
         - name: Marketplace
           file: ./abis/Marketplace.json
       eventHandlers:
-        - event: ArtworkList(indexed bytes32,address,uint256,uint256,uint256,uint256,uint256)
+        - event: ArtworkList(indexed bytes32,address,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleArtworkList
-        - event: ArtworkBid(indexed bytes32,address,uint256)
+        - event: ArtworkBid(indexed bytes32,address,uint256,uint256)
           handler: handleArtworkBid
-        - event: ArtworkClaim(indexed bytes32,address)
+        - event: ArtworkClaim(indexed bytes32,address,uint256)
           handler: handleArtworkClaim
-        - event: ArtworkMint(address,indexed uint256,string)
+        - event: ArtworkMint(address,indexed uint256,string,uint256)
           handler: handleArtworkMint
-        - event: ArtworkWithdraw(indexed bytes32)
+        - event: ArtworkWithdraw(indexed bytes32,uint256)
           handler: handleArtworkWithdraw
       file: ./src/handlers/Marketplace.mapping.ts
 templates:
@@ -46,20 +46,20 @@ templates:
       language: wasm/assemblyscript
       file: ./src/handlers/Marketplace.mapping.ts
       entities:
-        - Nft
-        - Order
-        - OrderBid
+        - ArtworkNftEntity
+        - ArtworkOrderEntity
+        - ArtworkBidEntity
       abis:
         - name: Marketplace
           file: ./abis/Marketplace.json
       eventHandlers:
-        - event: ArtworkList(indexed bytes32,address,uint256,uint256,uint256,uint256,uint256)
+        - event: ArtworkList(indexed bytes32,address,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleArtworkList
-        - event: ArtworkBid(indexed bytes32,address,uint256)
+        - event: ArtworkBid(indexed bytes32,address,uint256,uint256)
           handler: handleArtworkBid
-        - event: ArtworkClaim(indexed bytes32,address)
+        - event: ArtworkClaim(indexed bytes32,address,uint256)
           handler: handleArtworkClaim
-        - event: ArtworkMint(address,indexed uint256,string)
+        - event: ArtworkMint(address,indexed uint256,string,uint256)
           handler: handleArtworkMint
-        - event: ArtworkWithdraw(indexed bytes32)
+        - event: ArtworkWithdraw(indexed bytes32,uint256)
           handler: handleArtworkWithdraw
